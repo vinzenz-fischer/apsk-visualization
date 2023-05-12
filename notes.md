@@ -9,13 +9,11 @@
 - modulation degree slider
     - adaptive `scale`
     - only show label of active constellation point (when mod_deg too big)
+- slow-mo slider
 
 
 ## Ideas
-- data string moving along with the samples
-- slow-mo slider
-- receiver
-- statistics about noise resistance, data throughput, how hard it is to differentiate similar data points
-- ability to change the data point pattern (quadrature, radial)
 - use a spring to imitate real world inaccuracy and inertia
-- send actual data (and see how well/fast it gets transmitted)
+- receiver
+- statistics about noise resistance, data throughput, how hard it is to differentiate similar symbols
+- ability to change the constellation pattern (quadrature, radial, hexagonal?)
