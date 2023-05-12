@@ -1,14 +1,18 @@
 // variables to play around with
 let period = 1;
-let speed = 6;
-let mod_deg = 16; // modulation degree
+let speed = 3;
+let mod_deg = 4; // modulation degree
 
 let samples = [];
 let constellation_points = [];
-let time = 0;
-let scale = 45;
+let symbol_labels = [];
+let reset = false;
+let has_bg = true;
+let time = period - 0.0001; // hacky workaround, otherwise the samples == 0 until first reset. No idea why ¯\_(ツ)_/¯;
+let scale = 100;
 let sample_start_x;
-let curr_constellation_point, indicator, anchor;
+let curr_sample, curr_label, curr_constell_point
+let indicator, anchor;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -16,7 +20,6 @@ function setup() {
   anchor = createVector(width / 4, height / 2);
 
   sample_start_x = width / 2 - anchor.x; // pow(mod_deg/2, 2)*2 + 100;
-  time = period - 0.0001; // hacky workaround, otherwise the samples == 0 until first reset (line 31). No idea why ¯\_(ツ)_/¯
 
   generateConstellationPoints();
   chooseConstellationPoint();
@@ -27,10 +30,11 @@ function draw() {
   translate(anchor.x, anchor.y);
 
   time += deltaTime / 1000;
-  
-  if (time >= period) { // reset
+  reset = time >= period;
+  if (reset) {
     time %= period;
-    curr_constellation_point.is_selected = false;
+    has_bg = !has_bg;
+    curr_constell_point.is_selected = false;
     chooseConstellationPoint();
   }
   
@@ -42,15 +46,23 @@ function draw() {
     c_point.show();
   });
 
-  stroke(255, 64); strokeWeight(1); // horizontal
+  stroke(255, 128); strokeWeight(1); // horizontal
   line(indicator.x, indicator.y, sample_start_x, indicator.y);
 
   // create new sample
-  samples.push(new SignalSample(sample_start_x, indicator.y, speed));
+  curr_sample = new SignalSample(sample_start_x, indicator.y, speed)
+  samples.push(curr_sample);
+
+  // if sample is part of a new symbol, create a label
+  if (reset) {
+    curr_label = new SymbolLabel(curr_sample, curr_constell_point.data, has_bg)
+    symbol_labels.push(curr_label);
+  }
+  try{curr_label.end_sample = curr_sample;} catch{}
 
   stroke(255); strokeWeight(2); // radial
   line(0, 0, indicator.x, indicator.y);
-  handleSamples();
+  handleSymbols();
 }
 
 
@@ -72,23 +84,34 @@ function generateConstellationPoints()
 
 function chooseConstellationPoint()
 {
-  curr_constellation_point = random(constellation_points);
-  curr_constellation_point.is_selected = true;
-  const x = curr_constellation_point.pos.x;
-  const y = curr_constellation_point.pos.y;
+  curr_constell_point = random(constellation_points);
+  curr_constell_point.is_selected = true;
+  const x = curr_constell_point.pos.x;
+  const y = curr_constell_point.pos.y;
   indicator = createVector(x, y);
 }
 
-function handleSamples()
+function handleSymbols()
 {
     for (let i = 0; i < samples.length; i++) {
         const sample = samples[i];
         sample.update();
-        sample.show();
 
         if (sample.pos.x > width + speed) {
             samples.splice(i, 1);
         }
+    }
+
+    const smd = scale * mod_deg;
+    for (let i = 0; i < symbol_labels.length; i++) {
+      const symbol_label = symbol_labels[i];
+      symbol_label.show(smd);
+    }
+
+    for (let i = 0; i < symbol_labels.length; i++) {
+      if (symbol_labels[i].start_sample.pos.x > width + speed) {
+        symbol_labels.splice(i, 1);
+      }
     }
 
     stroke(255); strokeWeight(3);
