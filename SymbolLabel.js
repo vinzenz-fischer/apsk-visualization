@@ -12,7 +12,7 @@ class SymbolLabel
         
         if (this.has_bg) {
             let w = abs(this.start_sample.pos.x - this.end_sample.pos.x);
-            fill(128, 64); noStroke();
+            fill(128, 64);
             rect(this.end_sample.pos.x, -height>>1, w, height);
         }
 

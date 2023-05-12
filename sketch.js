@@ -2,6 +2,7 @@
 let period = 1;
 let speed = 3;
 let mod_deg = 4; // modulation degree
+let speed_slider;
 
 let samples = [];
 let constellation_points = [];
@@ -18,8 +19,9 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   stroke(255); textAlign(CENTER);
   anchor = createVector(width / 4, height / 2);
+  sample_start_x = width / 2 - anchor.x;
 
-  sample_start_x = width / 2 - anchor.x; // pow(mod_deg/2, 2)*2 + 100;
+  speed_slider = new Slider("Speed", 0.25, 3, 1, 0.25, "x", 50, height - 50);
 
   generateConstellationPoints();
   chooseConstellationPoint();
@@ -27,7 +29,13 @@ function setup() {
 
 function draw() {
   background(0);
+  push();
   translate(anchor.x, anchor.y);
+
+  if (speed_slider.valueChanged()) {
+    period = 1 / speed_slider.slider.value();
+    speed  = 3 * speed_slider.slider.value();
+  }
 
   time += deltaTime / 1000;
   reset = time >= period;
@@ -46,11 +54,11 @@ function draw() {
     c_point.show();
   });
 
-  stroke(255, 128); strokeWeight(1); // horizontal
+  stroke(255, 128); strokeWeight(1); // horizontal line
   line(indicator.x, indicator.y, sample_start_x, indicator.y);
 
   // create new sample
-  curr_sample = new SignalSample(sample_start_x, indicator.y, speed)
+  curr_sample = new SignalSample(sample_start_x, indicator.y)
   samples.push(curr_sample);
 
   // if sample is part of a new symbol, create a label
@@ -58,11 +66,22 @@ function draw() {
     curr_label = new SymbolLabel(curr_sample, curr_constell_point.data, has_bg)
     symbol_labels.push(curr_label);
   }
-  try{curr_label.end_sample = curr_sample;} catch{}
 
-  stroke(255); strokeWeight(2); // radial
-  line(0, 0, indicator.x, indicator.y);
+  try {
+    curr_label.end_sample = curr_sample;
+  } catch { }
+
+  stroke(255); strokeWeight(2);
+  line(0, 0, indicator.x, indicator.y); // turning line
   handleSymbols();
+
+  pop();
+  // UI related stuff; canvas-space coords
+  noStroke(); fill(255); textSize(32);
+  text("Amplitude & phase-shift keying", width>>1, 48);
+  textSize(13);
+
+  speed_slider.show();
 }
 
 
@@ -95,7 +114,7 @@ function handleSymbols()
 {
     for (let i = 0; i < samples.length; i++) {
         const sample = samples[i];
-        sample.update();
+        sample.update(speed);
 
         if (sample.pos.x > width + speed) {
             samples.splice(i, 1);
@@ -103,6 +122,7 @@ function handleSymbols()
     }
 
     const smd = scale * mod_deg;
+    noStroke();
     for (let i = 0; i < symbol_labels.length; i++) {
       const symbol_label = symbol_labels[i];
       symbol_label.show(smd);

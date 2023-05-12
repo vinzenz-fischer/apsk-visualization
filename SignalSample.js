@@ -1,12 +1,11 @@
 class SignalSample
 {
-    constructor(x, y, speed) {
+    constructor(x, y) {
         this.pos = createVector(x, y);
-        this.speed = speed;
     }
 
-    update() {
-        this.pos.x += this.speed;
+    update(speed) {
+        this.pos.x += speed;
     }
 
     show() {
