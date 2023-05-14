@@ -40,7 +40,7 @@ function draw() {
   time += deltaTime / 1000;
   reset = time >= period;
   if (reset) {
-    time %= period;
+    time -= period;
     has_bg = !has_bg;
     curr_constell_point.is_selected = false;
     chooseConstellationPoint();
