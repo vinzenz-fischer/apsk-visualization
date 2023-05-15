@@ -78,7 +78,7 @@ function draw() {
   pop();
   // UI related stuff; canvas-space coords
   noStroke(); fill(255); textSize(32);
-  text("Amplitude & phase-shift keying", width>>1, 48);
+  text("16 Quadrature Amplitude Modulation", width>>1, 48); // Amplitude & phase-shift keying
   textSize(13);
 
   speed_slider.show();
